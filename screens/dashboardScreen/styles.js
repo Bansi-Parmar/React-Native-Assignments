@@ -13,10 +13,11 @@ export const taskText = () => ({
   color: 'black',
 });
 export const checkBox = () => ({borderWidth: 2, height: 20, width: 20});
-export const headingText = () => ({
+export const headingText = isTop => ({
   fontSize: 35,
   fontWeight: '600',
   color: 'black',
+  marginTop: isTop ? 30 : 0,
 });
 export const mainContainer = () => ({
   padding: 30,
@@ -37,7 +38,7 @@ export const innerTxt = isSecond => ({
   textAlign: 'center',
 });
 export const titleStyle = () => ({
-  color: 'res',
+  color: 'red',
   fontSize: 30,
   textAlign: 'center',
   marginTop: 20,

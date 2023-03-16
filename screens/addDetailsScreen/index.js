@@ -1,13 +1,6 @@
 import {useNavigation} from '@react-navigation/native';
-import React, {useState, useEffect} from 'react';
-import {
-  Text,
-  View,
-  SafeAreaView,
-  ScrollView,
-  Pressable,
-  TextInput,
-} from 'react-native';
+import React, {useState} from 'react';
+import {Text, View, SafeAreaView, Pressable, TextInput} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as styles from './styles';
 

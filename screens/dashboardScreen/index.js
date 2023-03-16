@@ -37,19 +37,16 @@ export const DashboardScreen = () => {
       const value = await AsyncStorage.getItem('@AddUserData');
       if (value !== null) {
         let data = JSON.parse(value);
-        console.log(
-          ' DashBoard  ==> ',
-          (data.veryDisappointed * 100) / data.userCount,
-        );
         setPmfDetails({
           totalUserCount: data.userCount,
           veryDisappointedAmount: data.veryDisappointed,
           mildlyDisappointedAmount: data.mildlyDisappointed,
           notDisappointedAmount: data.notDisappointed,
           progressPercentage: [
-            (data.veryDisappointed * 100) / data.userCount >= 1
+            Number((data.veryDisappointed * 100) / data.userCount) / 100 >= 1
               ? 1
-              : (data.veryDisappointed * 100) / data.userCount,
+              : Number((data.veryDisappointed * 100) / data.userCount) / 100,
+            ,
           ],
         });
 
@@ -79,6 +76,10 @@ export const DashboardScreen = () => {
   return (
     <SafeAreaView style={styles.mainContainer()}>
       <Text style={styles.headingText()}>Dashboard</Text>
+      <Text
+        style={styles.headingText(
+          true,
+        )}>{`Total User ${pmfDetails.totalUserCount}`}</Text>
       <View style={styles.rowMain()}>
         <ProgressChart
           data={pmfDetails.progressPercentage}
@@ -91,7 +92,7 @@ export const DashboardScreen = () => {
         />
         <Text style={styles.innerTxt()}>PMF</Text>
         <Text style={[styles.innerTxt(true), {fontSize: 30}]}>
-          {pmfDetails.totalUserCount}
+          {`${pmfDetails.progressPercentage[0] * 100}%`}
         </Text>
         <View style={{width: 100}}>
           <Text style={styles.infoText(true)}>
