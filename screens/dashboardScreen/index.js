@@ -1,29 +1,35 @@
-import React, {useState, useEffect} from 'react';
+import React from 'react';
 import {Text, View, SafeAreaView, Pressable} from 'react-native';
 import {ProgressChart} from 'react-native-chart-kit';
 import {useNavigation} from '@react-navigation/native';
 
+import {useSelector, useDispatch} from 'react-redux';
+import {userLogOut} from 'redux-actions';
+
 import * as styles from './styles';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const DashboardScreen = () => {
+  let {getUserDetails} = useSelector(state => ({
+    getUserDetails: state.addUserDetails.getUserDetails,
+  }));
+  let percentage = [
+    Number(
+      (getUserDetails?.veryDisappointed * 100) / getUserDetails?.userCount,
+    ) /
+      100 >=
+    1
+      ? 1
+      : Number(
+          (getUserDetails?.veryDisappointed * 100) / getUserDetails?.userCount,
+        ) / 100,
+  ];
+  // console.log('DASH-SCREEN ==> ', getUserDetails);
   const navigation = useNavigation();
-  let initialState = {
-    totalUserCount: 0,
-    veryDisappointedAmount: 0,
-    mildlyDisappointedAmount: 0,
-    notDisappointedAmount: 0,
-    progressPercentage: [0],
-  };
-  const [extra, setExtra] = useState(0);
-  const [titleData, setTitleData] = useState('');
-  const [pmfDetails, setPmfDetails] = useState(initialState);
+  const dispatch = useDispatch();
 
   const clearStorages = async () => {
-    AsyncStorage.clear();
-    setUpdateData();
+    await dispatch(userLogOut());
   };
-
   const chartConfig1 = {
     backgroundGradientFromOpacity: 0,
     backgroundGradientToOpacity: 0,
@@ -32,57 +38,15 @@ export const DashboardScreen = () => {
     useShadowColorFromDataset: false,
   };
 
-  const setUpdateData = async () => {
-    try {
-      const value = await AsyncStorage.getItem('@AddUserData');
-      if (value !== null) {
-        let data = JSON.parse(value);
-        setPmfDetails({
-          totalUserCount: data.userCount,
-          veryDisappointedAmount: data.veryDisappointed,
-          mildlyDisappointedAmount: data.mildlyDisappointed,
-          notDisappointedAmount: data.notDisappointed,
-          progressPercentage: [
-            Number((data.veryDisappointed * 100) / data.userCount) / 100 >= 1
-              ? 1
-              : Number((data.veryDisappointed * 100) / data.userCount) / 100,
-            ,
-          ],
-        });
-
-        if ((data.veryDisappointed * 100) / data.userCount >= 40) {
-          setTitleData('You have a strong product/market fit');
-        } else {
-          setTitleData('You have not a product-market fit');
-        }
-        setExtra(extra + 1);
-      } else {
-        setPmfDetails(initialState);
-        setTitleData('');
-      }
-    } catch (error) {
-      alert('Error ==> ', error);
-      console.log(error);
-      // Error saving data
-    }
-  };
-
-  useEffect(() => {
-    navigation.addListener('focus', () => {
-      setUpdateData();
-    });
-  }, [navigation]);
-
   return (
     <SafeAreaView style={styles.mainContainer()}>
       <Text style={styles.headingText()}>Dashboard</Text>
-      <Text
-        style={styles.headingText(
-          true,
-        )}>{`Total User ${pmfDetails.totalUserCount}`}</Text>
+      <Text style={styles.headingText(true)}>{`Total User ${
+        getUserDetails.userCount !== undefined ? getUserDetails.userCount : 0
+      }`}</Text>
       <View style={styles.rowMain()}>
         <ProgressChart
-          data={pmfDetails.progressPercentage}
+          data={isNaN(percentage.toString()) ? [0] : percentage}
           width={150}
           height={150}
           strokeWidth={18}
@@ -92,22 +56,37 @@ export const DashboardScreen = () => {
         />
         <Text style={styles.innerTxt()}>PMF</Text>
         <Text style={[styles.innerTxt(true), {fontSize: 30}]}>
-          {`${pmfDetails.progressPercentage[0] * 100}%`}
+          {`${parseInt(
+            isNaN(percentage.toString()) ? [0] : percentage * 100,
+            10,
+          )}%`}
         </Text>
         <View style={{width: 100}}>
           <Text style={styles.infoText(true)}>
-            {`Very disappointed ${pmfDetails.veryDisappointedAmount}`}
+            {`Very disappointed ${
+              getUserDetails.veryDisappointed !== undefined
+                ? getUserDetails.veryDisappointed
+                : 0
+            }`}
           </Text>
           <Text style={styles.infoText()}>
-            {`Mildly disappointed ${pmfDetails.mildlyDisappointedAmount}`}
+            {`Mildly disappointed ${
+              getUserDetails?.mildlyDisappointed !== undefined
+                ? getUserDetails?.mildlyDisappointed
+                : 0
+            }`}
           </Text>
           <Text style={styles.infoText()}>
-            {`Not disappointed ${pmfDetails.notDisappointedAmount}`}
+            {`Not disappointed ${
+              getUserDetails?.notDisappointed !== undefined
+                ? getUserDetails?.notDisappointed
+                : 0
+            }`}
           </Text>
         </View>
       </View>
       <View style={styles.rowMain()}>
-        {titleData.length == 0 ? (
+        {getUserDetails.notDisappointed == undefined ? (
           <Pressable
             onPress={() => navigation.navigate('addDetailScreen')}
             style={styles.buttonStyle()}>
@@ -119,7 +98,13 @@ export const DashboardScreen = () => {
           </Pressable>
         )}
       </View>
-      <Text style={styles.titleStyle()}>{titleData}</Text>
+      {!isNaN(percentage.toString()) && (
+        <Text style={styles.titleStyle()}>
+          {percentage >= 40
+            ? 'You have a strong product/market fit'
+            : 'You have not a product-market fit'}
+        </Text>
+      )}
     </SafeAreaView>
   );
 };

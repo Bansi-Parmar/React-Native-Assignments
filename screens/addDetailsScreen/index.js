@@ -1,10 +1,20 @@
 import {useNavigation} from '@react-navigation/native';
 import React, {useState} from 'react';
-import {Text, View, SafeAreaView, Pressable, TextInput} from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  Text,
+  View,
+  SafeAreaView,
+  Pressable,
+  TextInput,
+  Alert,
+} from 'react-native';
 import * as styles from './styles';
+import {useDispatch} from 'react-redux';
+
+import {AddUserDetails} from 'redux-actions';
 
 export const AddDetailScreen = () => {
+  const dispatch = useDispatch();
   const navigation = useNavigation();
   let initialValue = {
     userCount: '',
@@ -27,11 +37,21 @@ export const AddDetailScreen = () => {
       setExtra(extra + 1);
     } else {
       try {
-        await AsyncStorage.setItem('@AddUserData', JSON.stringify(pmfDetails));
-        navigation.navigate('dashboardScreen');
+        const res = await dispatch(AddUserDetails(pmfDetails));
+        console.log('res ==> ', res);
+        if (res === 'Success') {
+          // alert('data Added!!');
+          Alert.alert('Success', 'data Added!!', [
+            {
+              text: 'ok',
+              onPress: () => {
+                navigation.goBack();
+              },
+            },
+          ]);
+        }
       } catch (error) {
-        alert('Error ==> ', error);
-        console.log(error);
+        alert('Error', error);
       }
     }
   };
